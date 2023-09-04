@@ -1,1 +1,0 @@
-export const Key = "RGAPI-886d6b0b-b852-4e31-a5b8-1ba5eb589f53";

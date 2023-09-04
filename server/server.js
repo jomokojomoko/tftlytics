@@ -1,6 +1,7 @@
 const dotnev = require('dotenv')
 const express = require('express');
 const cors = require('cors');
+const timer = require("timers/promises");
 
 const app = express();
 
@@ -10,11 +11,11 @@ app.use(cors());
 app.use(express.json());
 
 async function matchList() {
-  var matches = await fetch('https://americas.api.riotgames.com/tft/match/v1/matches/by-puuid/NUWXdIrFiurYDsMUr_QGC6JcP_m24T-Hf80JMGw0bPxNFCXyG6k1Li8U9Aa0ReJv6eRABIg0r2v2TQ/ids?start=0&count=20&api_key=' + process.env.RIOT_KEY)
+  var matches = await fetch('https://americas.api.riotgames.com/tft/match/v1/matches/by-puuid/' + process.env.PLAYER_ID + '/ids?start=0&count=20&api_key=' + process.env.RIOT_KEY)
     .then(function (response) {
       return response.json()
     }).then(function (data) {
-      return data
+      return data.slice(0,10);
     }).catch(error => console.error('Error:', error));
   return matches
 }
@@ -71,9 +72,9 @@ app.get('/riot', (req, res) => {
 app.get('/matches', async (req, res) => {
   var matches = await matchList()
   var lastRoundList = [];
-  console.log(matches)
   if (matches.status == undefined && matches != undefined) {
     for (const match of matches) {
+      await timer.setTimeout(1000);
       var lastRound = await lastRounds(match)
       lastRoundList.push(lastRound)
     }
@@ -84,12 +85,27 @@ app.get('/matches', async (req, res) => {
 
 app.get('/playerInfo', async (req, res) => {
   var matches = await matchList()
-  var players=[];
+  var players = [];
   if (matches.status == undefined && matches != undefined) {
     for (const match of matches) {
-      players.push(await playersResults(match,process.env.PLAYER_ID))
+      await timer.setTimeout(1000);
+      players.push(await playersResults(match, process.env.PLAYER_ID))
     }
-    res.json({PlayerInfo:players});
+    res.json({ PlayerInfo: players });
+  }
+});
+
+app.get('/traits', async (req, res) => {
+  var matches = await matchList()
+  var traits = [];
+  if (matches.status == undefined && matches != undefined) {
+    for (const match of matches) {
+      await timer.setTimeout(1000);
+      const player = await playersResults(match, process.env.PLAYER_ID)
+      player.traits.forEach((trait)=> trait.tier_current!=0 ? traits.push(trait.name):null )
+    }
+    console.log(traits);
+    res.json({ Traits:traits });
   }
 });
 
