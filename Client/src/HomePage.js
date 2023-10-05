@@ -13,6 +13,7 @@ function HomePage() {
   const [placementBarData, setPlacementBarData] = useState(Data);
   const [traitBarData, setTraitBarData] = useState(Data);
 
+  document.body.style.backgroundColor = "white";
 
 
   useEffect(() => {
